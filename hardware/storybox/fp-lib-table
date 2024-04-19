@@ -1,0 +1,6 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "Library")(type "KiCad")(uri "${KIPRJMOD}/Library.pretty")(options "")(descr ""))
+  (lib (name "storybox")(type "KiCad")(uri "${KIPRJMOD}/storybox.pretty")(options "")(descr ""))
+  (lib (name "sj3525")(type "KiCad")(uri "/home/philippe/Desktop/fablabke-partage/Projets/Boite a histoire/hardware/sj3525.pretty")(options "")(descr ""))
+)

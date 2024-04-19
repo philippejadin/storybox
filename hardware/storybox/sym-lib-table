@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "storybox")(type "KiCad")(uri "${KIPRJMOD}/storybox.kicad_sym")(options "")(descr ""))
+  (lib (name "PJ324M")(type "KiCad")(uri "${KIPRJMOD}/PJ324M.kicad_sym")(options "")(descr ""))
+)
