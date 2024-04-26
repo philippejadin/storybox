@@ -11,7 +11,7 @@
     (via_costs 50)
     (plane_via_costs 5)
     (start_ripup_costs 100)
-    (start_pass_no 12270)
+    (start_pass_no 15693)
     (layer_rule F.Cu
       (active on)
       (preferred_direction vertical)
@@ -82,14 +82,12 @@
   (class "kicad_default"
     +3V3 "Net-(U1-GPIO17)" "unconnected-(U3-D2-Pad8)" "unconnected-(U3-DET-Pad9)" "unconnected-(U3-D1-Pad7)" "Net-(U1-GPIO19)" "Net-(U1-GPIO18)" "Net-(U1-GPIO16)"
     GND "Net-(D1-K)" "Net-(U1-GPIO21)" "Net-(U1-GPIO22)" "unconnected-(U2-Gain-Pad4)" "unconnected-(U2-SD-Pad5)" "Net-(U1-GPIO20)" "Net-(U1-GPIO13)"
-    "Net-(J4-Pin_3)" "Net-(U1-GPIO12)" "unconnected-(U1-GPIO1-Pad2)" "Net-(J4-Pin_1)" "Net-(J4-Pin_2)" "Net-(J4-Pin_6)" "Net-(J4-Pin_5)" "Net-(U1-GPIO10)"
-    "Net-(J4-Pin_4)" "Net-(J4-Pin_7)" "Net-(U1-GPIO26_ADC0)" "Net-(U1-GPIO27_ADC1)" "unconnected-(U1-VBUS-Pad40)" "unconnected-(U1-SWCLK-Pad41)" "unconnected-(U1-AGND-Pad33)" "unconnected-(U1-SWDIO-Pad43)"
-    "unconnected-(U1-RUN-Pad30)" "Net-(J4-Pin_8)" "unconnected-(U1-GPIO0-Pad1)" "Net-(U1-GPIO11)" "unconnected-(U1-GND-Pad42)_0" "Net-(J3-Pin_2)" "unconnected-(U1-GPIO14-Pad19)_0" "Net-(J3-Pin_1)"
-    "Net-(U2-Speaker_+)" +5V "Net-(U5-BAT-)" "Net-(U5-BAT+)" "unconnected-(U5-USB_GND-Pad2)" "unconnected-(U5-USB_VIN-Pad1)" "unconnected-(U1-GND-Pad18)" "unconnected-(U1-3V3_EN-Pad37)"
-    "unconnected-(U1-GND-Pad23)" "unconnected-(U1-ADC_VREF-Pad35)_0" "unconnected-(U1-GPIO28_ADC2-Pad34)_0" "unconnected-(U1-GPIO15-Pad20)_0" "unconnected-(U1-GPIO28_ADC2-Pad34)" "unconnected-(U1-GPIO14-Pad19)" "unconnected-(U1-GPIO15-Pad20)" "unconnected-(U1-GND-Pad42)"
-    "unconnected-(U1-ADC_VREF-Pad35)" "unconnected-(U1-GPIO0-Pad1)_0" "unconnected-(U1-GND-Pad23)_0" "unconnected-(U1-SWCLK-Pad41)_0" "unconnected-(U1-GND-Pad18)_0" "unconnected-(U1-AGND-Pad33)_0" "unconnected-(U1-3V3_EN-Pad37)_0" "unconnected-(U1-GPIO1-Pad2)_0"
-    "unconnected-(U1-SWDIO-Pad43)_0" "unconnected-(U1-RUN-Pad30)_0" "unconnected-(U1-VBUS-Pad40)_0" "unconnected-(U1-GND-Pad13)" "unconnected-(U1-GND-Pad13)_0" "unconnected-(U1-GND-Pad8)" "unconnected-(U1-GND-Pad28)" "unconnected-(U1-GND-Pad28)_0"
-    "unconnected-(U1-GND-Pad8)_0" "Net-(On-Off1-A)"
+    "Net-(J4-Pin_3)" "Net-(U1-GPIO12)" "Net-(J4-Pin_1)" "Net-(J4-Pin_2)" "Net-(J4-Pin_6)" "Net-(J4-Pin_5)" "Net-(U1-GPIO10)" "Net-(J4-Pin_4)"
+    "Net-(J4-Pin_7)" "Net-(U1-GPIO26_ADC0)" "Net-(U1-GPIO27_ADC1)" "unconnected-(U1-SWDIO-Pad43)" "Net-(J4-Pin_8)" "Net-(U1-GPIO11)" "Net-(J3-Pin_2)" "Net-(J3-Pin_1)"
+    "Net-(U2-Speaker_+)" +5V "Net-(U5-BAT-)" "Net-(U5-BAT+)" "unconnected-(U5-USB_GND-Pad2)" "unconnected-(U5-USB_VIN-Pad1)" "Net-(JP1-B)" "unconnected-(U1-GPIO14-Pad19)"
+    "unconnected-(U1-GPIO15-Pad20)" "unconnected-(U1-3V3_EN-Pad37)_0" "unconnected-(U1-GND-Pad13)" "Net-(On-Off1-A)" "unconnected-(U1-VBUS-Pad40)" "unconnected-(U1-GND-Pad23)" "unconnected-(U1-GND-Pad8)" "unconnected-(U1-ADC_VREF-Pad35)_0"
+    "unconnected-(U1-GPIO1-Pad2)_0" "unconnected-(U1-GPIO0-Pad1)_0" "unconnected-(U1-SWCLK-Pad41)_0" "Net-(JP1-A)" "unconnected-(U1-GND-Pad28)_0" "unconnected-(U1-RUN-Pad30)_0" "unconnected-(U1-AGND-Pad33)_0" "unconnected-(U1-GND-Pad18)_0"
+    "unconnected-(U1-GND-Pad42)_0"
     (clearance_class "kicad_default")
     (via_rule "kicad_default")
     (rule
