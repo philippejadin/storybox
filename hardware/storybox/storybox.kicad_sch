@@ -7035,6 +7035,15 @@
 				(hide yes)
 			)
 		)
+		(property "Sim.Library" "./"
+			(at 154.94 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "e860e297-bc60-436d-9bb6-a84abbb0eed2")
 		)

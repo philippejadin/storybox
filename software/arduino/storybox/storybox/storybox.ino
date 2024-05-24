@@ -4,16 +4,22 @@ Story box
 Code pour la boite à histoire, version arduino.
 
 Librairies utilisées :
-https://github.com/LennartHennigs/Button2 (latest)
+https://github.com/LennartHennigs/Button2 (latest) // simple button handler
 https://github.com/pschatzmann/arduino-audio-tools #V0.9.7
 https://github.com/pschatzmann/arduino-libhelix (latest)
+https://github.com/jonnieZG/EWMA // smooth analog values (for smooth volume opperations)
+
+à tester  : https://github.com/jonnieZG/EButton
+
  */
 
 #include <SPI.h>
 #include <SDFS.h>
+// #include <SdFat.h>
 #include "AudioTools.h"
 #include "AudioCodecs/CodecMP3Helix.h"
 #include "Button2.h"
+#include <Ewma.h>
 
 /***************** CONFIG *******************/
 
@@ -21,11 +27,12 @@ https://github.com/pschatzmann/arduino-libhelix (latest)
 #define MAXSTORIES 50
 
 // max volume levels for speaker and headphones
-#define MAX_SPEAKER_VOLUME 1024  // 0 -> 1024
-#define MAX_HEADPHONE_VOLUME 200 // 0 -> 1024
-
+#define MAX_SPEAKER_VOLUME 1024  // 0 -> 1024 // boost > 1024
+#define MAX_HEADPHONE_VOLUME 150 // 0 -> 1024
 
 #define JACK_DETECTION_LEVEL 800 // bellow this value it will be considered speaker, above jack
+
+#define VOLUME_STEPS 32 // How many steps there are in the volume control (max 1024)
 
 #define DEBUG true
 
@@ -51,7 +58,14 @@ https://github.com/pschatzmann/arduino-libhelix (latest)
 #define BTN_DEBOUNCE_MS 50
 #define COPIER_BUFFER_SIZE 512
 
-// #define SPI_CLOCK SD_SCK_MHZ(20)
+#define HEADPHONE 0
+#define SPEAKER 1
+
+#define is_menu 0
+#define is_play 1
+#define is_pause 2
+
+// #define SPI_CLOCK SD_SCK_MHZ(2)
 // #define MP3_MAX_OUTPUT_SIZE 1024
 // #define MP3_MAX_FRAME_SIZE 800
 
@@ -68,9 +82,11 @@ File audioFile;
 // StreamCopy copier(decoder, audioFile, COPIER_BUFFER_SIZE);
 StreamCopy copier;
 
-#define is_menu 0
-#define is_play 1
-#define is_pause 2
+Ewma smoother(0.01); // 0.1 : less smoothing // 0.01 : More smoothing - less prone to noise, but slower to detect changes
+
+
+
+
 
 int status = is_menu;
 
@@ -86,16 +102,20 @@ int totalstories = 0;
 
 String stories[MAXSTORIES];
 
-float volume = 0;
+int volume = 0;
+int lastVolume = 0;
 
-#define HEADPHONE 0
-#define SPEAKER 1
 
 int output = HEADPHONE;
+int lastOutput = HEADPHONE;
+
+bool led = true;
 
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
+
+  blink(1);
 
   // logger
   Serial.begin(115200);
@@ -110,11 +130,12 @@ void setup()
   {
     blink(5);
     Serial.printf("Init sd failed\n");
+    // SDFS.errorHalt();
   }
 
-  // delay(100);
-  // Serial.printf("Story Box start\n");
-  // delay(100);
+  delay(100);
+  Serial.printf("Story Box start\n");
+  delay(100);
 
   // i2s
   auto config = i2s.defaultConfig(TX_MODE);
@@ -131,10 +152,13 @@ void setup()
   copier.resize(COPIER_BUFFER_SIZE);
 
   // volume
+  // auto volume_config = volumer.defaultConfig();
+  // volume_config.allow_boost = true; // this allows volume > 1.0 be careful with this setting
   volumer.begin(config); // we need to provide the bits_per_sample and channels
+  //volumer.begin(volume_config);
   volumer.setVolume(0.1);
-  // handleJack();
-  // handleVolume();
+  
+  
   delay(100);
 
   // buttons
@@ -153,6 +177,8 @@ void setup()
   handleDirectoryChange();
   play("/intro.mp3");
   digitalWrite(LED_BUILTIN, HIGH);
+
+  
 }
 
 void blink(int times)
@@ -313,27 +339,9 @@ void handleTapPlay(Button2 &b)
   debug();
 }
 
-float lastVolume;
 
-void handleVolume()
-{
-  if (output == HEADPHONE)
-  {
 
-    volume = float(map(analogRead(VOLUME_PIN), 0, 1024, 0, MAX_HEADPHONE_VOLUME)) / 1024.0;
-  }
 
-  if (output == SPEAKER)
-  {
-    volume = float(map(analogRead(VOLUME_PIN), 0, 1024, 0, MAX_SPEAKER_VOLUME)) / 1024.0;
-  }
-
-  if (volume != lastVolume)
-  {
-    lastVolume = volume;
-    volumer.setVolume(volume);
-  }
-}
 
 void handleBattery()
 {
@@ -371,8 +379,8 @@ void handleJack()
     }
   }
 
-  //Serial.print("Jack max : ");
-  //Serial.println(max);
+  // Serial.print("Jack max : ");
+  // Serial.println(max);
 
   if (max > JACK_DETECTION_LEVEL)
   {
@@ -384,7 +392,33 @@ void handleJack()
   }
 }
 
-bool led = true;
+
+void handleVolume()
+{
+  volume = smoother.filter(analogRead(VOLUME_PIN));
+  volume = map(volume, 0, 1024, 0, VOLUME_STEPS);
+
+  if (volume != lastVolume || output != lastOutput)
+  {
+    lastVolume = volume;
+    lastOutput = output;
+
+    if (output == HEADPHONE)
+    {
+      volumer.setVolume(float(map(volume, 0, VOLUME_STEPS, 0, MAX_HEADPHONE_VOLUME)) / 1024);
+    }
+
+    if (output == SPEAKER)
+    {
+      volumer.setVolume(float(map(volume, 0, VOLUME_STEPS, 0, MAX_SPEAKER_VOLUME)) / 1024);
+    }
+
+    Serial.print("Volume : ");
+    Serial.println(volume);
+  }
+}
+
+
 
 void loop()
 {
@@ -407,8 +441,8 @@ void loop()
   if (status == is_play || status == is_menu)
   {
     copier.copy();
-    handleVolume();
   }
 
+  handleVolume();
   handleJack();
 }
