@@ -28,7 +28,7 @@ https://github.com/jonnieZG/EWMA // smooth analog values (for smooth volume oppe
 
 // max volume levels for speaker and headphones
 #define MAX_SPEAKER_VOLUME 1024  // 0 -> 1024 // boost > 1024
-#define MAX_HEADPHONE_VOLUME 150 // 0 -> 1024
+#define MAX_HEADPHONE_VOLUME 300 // 0 -> 1024
 
 #define JACK_DETECTION_LEVEL 800 // bellow this value it will be considered speaker, above jack
 
@@ -55,15 +55,15 @@ https://github.com/jonnieZG/EWMA // smooth analog values (for smooth volume oppe
 #define VOLUME_PIN 27
 #define JACK_PIN 28
 
-#define BTN_DEBOUNCE_MS 50
+// #define BTN_DEBOUNCE_MS 100
 #define COPIER_BUFFER_SIZE 512
 
 #define HEADPHONE 0
 #define SPEAKER 1
 
-#define is_menu 0
-#define is_play 1
-#define is_pause 2
+const int is_menu = 0;
+const int is_play = 1;
+const int is_pause = 2;
 
 // #define SPI_CLOCK SD_SCK_MHZ(2)
 // #define MP3_MAX_OUTPUT_SIZE 1024
@@ -82,11 +82,7 @@ File audioFile;
 // StreamCopy copier(decoder, audioFile, COPIER_BUFFER_SIZE);
 StreamCopy copier;
 
-Ewma smoother(0.01); // 0.1 : less smoothing // 0.01 : More smoothing - less prone to noise, but slower to detect changes
-
-
-
-
+Ewma smoother(0.05); // 0.1 : less smoothing // 0.01 : More smoothing - less prone to noise, but slower to detect changes
 
 int status = is_menu;
 
@@ -105,7 +101,6 @@ String stories[MAXSTORIES];
 int volume = 0;
 int lastVolume = 0;
 
-
 int output = HEADPHONE;
 int lastOutput = HEADPHONE;
 
@@ -113,12 +108,24 @@ bool led = true;
 
 void setup()
 {
+  // Alume la led à l'allumage
   pinMode(LED_BUILTIN, OUTPUT);
-
   blink(1);
 
-  // logger
+  // initialization de la liaisoon série, attente max 2 seconde pour cela
+  int cnt = 2000;
+  while (!Serial && cnt--)
+  {
+    delay(1);
+  }
   Serial.begin(115200);
+
+  // delay(100);
+  Serial.println("*************** Story Box start V3.1 ****************");
+  // delay(100);
+
+  // logger
+
   AudioLogger::instance().begin(Serial, AudioLogger::Warning);
   // AudioLogger::instance().begin(Serial, AudioLogger::Info); // use this for more logs
 
@@ -132,10 +139,6 @@ void setup()
     Serial.printf("Init sd failed\n");
     // SDFS.errorHalt();
   }
-
-  delay(100);
-  Serial.printf("Story Box start\n");
-  delay(100);
 
   // i2s
   auto config = i2s.defaultConfig(TX_MODE);
@@ -155,35 +158,44 @@ void setup()
   // auto volume_config = volumer.defaultConfig();
   // volume_config.allow_boost = true; // this allows volume > 1.0 be careful with this setting
   volumer.begin(config); // we need to provide the bits_per_sample and channels
-  //volumer.begin(volume_config);
+  // volumer.begin(volume_config);
   volumer.setVolume(0.1);
-  
-  
-  delay(100);
 
-  // buttons
+  // delay(100);
+
+  // Gestion des buttons : il vaut mieux lire une première fois chaque entrée pour éviter les fausses lectures
+  pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_HOME_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_PLAY_PIN, INPUT_PULLUP);
+
+  digitalRead(BUTTON_LEFT_PIN); 
+  digitalRead(BUTTON_RIGHT_PIN); 
+  digitalRead(BUTTON_HOME_PIN); 
+  digitalRead(BUTTON_PLAY_PIN); 
+
   button_left.begin(BUTTON_LEFT_PIN);
-  button_left.setPressedHandler(handleTapLeft);
+  button_left.setTapHandler(handleTapLeft);
 
   button_right.begin(BUTTON_RIGHT_PIN);
-  button_right.setPressedHandler(handleTapRight);
+  button_right.setTapHandler(handleTapRight);
 
   button_home.begin(BUTTON_HOME_PIN);
-  button_home.setPressedHandler(handleTapHome);
+  button_home.setTapHandler(handleTapHome);
 
   button_play.begin(BUTTON_PLAY_PIN);
-  button_play.setPressedHandler(handleTapPlay);
+  button_play.setTapHandler(handleTapPlay);
 
+  
   handleDirectoryChange();
   play("/intro.mp3");
   digitalWrite(LED_BUILTIN, HIGH);
-
-  
+  debug();
 }
 
 void blink(int times)
 {
-  delay(1000);
+  // delay(500);
   for (int i = 0; i < times; i++)
   {
     digitalWrite(LED_BUILTIN, HIGH);
@@ -191,7 +203,7 @@ void blink(int times)
     digitalWrite(LED_BUILTIN, LOW);
     delay(200);
   }
-  delay(1000);
+  // delay(500);
 }
 
 void play(String filename)
@@ -207,17 +219,6 @@ void playmenu()
   status = is_menu;
   String menu = "/menu.mp3";
   play(currentpath + '/' + stories[currentstory] + menu);
-}
-
-void playstory()
-{
-  if (status == is_pause)
-  {
-    status = is_play;
-    return;
-  }
-  status = is_play;
-  play(currentpath + '/' + stories[currentstory] + "/story.mp3");
 }
 
 // currentpath
@@ -293,7 +294,10 @@ void handleDirectoryChange()
 
 void handleTapLeft(Button2 &b)
 {
+  Serial.println("-----------------");
   Serial.println("button left pressed");
+  Serial.println("-----------------");
+
   currentstory--;
   if (currentstory < 0)
   {
@@ -307,7 +311,10 @@ void handleTapLeft(Button2 &b)
 
 void handleTapRight(Button2 &b)
 {
+  Serial.println("-----------------");
   Serial.println("button right pressed");
+  Serial.println("-----------------");
+
   currentstory++;
   if (currentstory >= totalstories)
   {
@@ -319,7 +326,10 @@ void handleTapRight(Button2 &b)
 
 void handleTapHome(Button2 &b)
 {
+  Serial.println("-----------------");
   Serial.println("button home pressed");
+  Serial.println("-----------------");
+
   currentpath = "";
   handleDirectoryChange();
   debug();
@@ -327,21 +337,36 @@ void handleTapHome(Button2 &b)
 
 void handleTapPlay(Button2 &b)
 {
+  Serial.println("-----------------");
   Serial.println("button play pressed");
+  Serial.println("-----------------");
+
+  // si on est en train de lire une histoire, on la pause
+
   if (status == is_play)
   {
     status = is_pause;
+    debug();
+    return;
   }
-  else
+  // si on est en pause, on lit
+  if (status == is_pause)
   {
-    playstory();
+    status = is_play;
+    debug();
+    return;
   }
+
+  // si on est dans un dossier avec des sous dossier, on rentre dedans et on joue le intro.mp3 + le menu.mp3 du premier sous dossier
+  // on change le currentpath
+
+  // si pas de sous dossier, on joue l'histoire
+
+  play(currentpath + '/' + stories[currentstory] + "/story.mp3");
+  status = is_play;
+
   debug();
 }
-
-
-
-
 
 void handleBattery()
 {
@@ -392,7 +417,6 @@ void handleJack()
   }
 }
 
-
 void handleVolume()
 {
   volume = smoother.filter(analogRead(VOLUME_PIN));
@@ -418,11 +442,10 @@ void handleVolume()
   }
 }
 
-
-
 void loop()
 {
 
+  // fait clignoter la led dans la boucle pour voir que le code tourne bien
   led = !led;
   if (led)
   {
@@ -433,16 +456,25 @@ void loop()
     digitalWrite(LED_BUILTIN, LOW);
   }
 
+  // gestion des boutons
   button_left.loop();
   button_right.loop();
   button_home.loop();
   button_play.loop();
 
+  // gestion du bouton de volume
+  handleVolume();
+
+  // gestion de l'état de la prise jack
+  handleJack();
+
+  // boucle de copie du son
   if (status == is_play || status == is_menu)
   {
     copier.copy();
   }
-
-  handleVolume();
-  handleJack();
+  else
+  {
+    delay(20);
+  }
 }
